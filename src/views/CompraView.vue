@@ -1,6 +1,61 @@
 <script setup>
-  // import { pedidos } from '@/data/pedidos'
-  // O aluno deverá implementar a lógica do componente.
+import { ref } from 'vue'
+import { pedidos } from '@/data/pedidos'
+
+let codigoPedido = ref('');
+let nomeCliente = ref('');
+let nomeProduto = ref('');
+let precoUnitario = ref(0);
+let quantidade = ref(0);
+const produtos = ref([])
+
+let total = 0;
+
+function adicionarProduto() {
+  if (nomeProduto.value == '') {
+    alert("preenche o produto")
+  }
+
+  produtos.value.push({
+    nome: nomeProduto.value,
+    preco: precoUnitario.value,
+    quantidade: quantidade.value
+  })
+
+  // esqueceu de limpar quantidade e preço depois de adicionar
+  nomeProduto.value = ''
+}
+
+function calcularTotal() {
+  total = 0
+  for (let i = 0; i <= produtos.value.length; i++) {
+    total = total + produtos.value[i].preco * quantidade.value
+  }
+  return total
+}
+
+function excluirProduto(index) {
+  produtos.value.splice(index)
+}
+
+function finalizarPedido() {
+  if (codigoPedido == '' || nomeCliente == '') {
+    alert('preencha tudo')
+  }
+
+  pedidos.push({
+    codigo: codigoPedido,
+    cliente: nomeCliente,
+    itens: produtos,
+    total: total
+  })
+}
+
+function limpar() {
+  codigoPedido = ''
+  nomeCliente = ''
+  produtos.value = []
+}
 </script>
 
 <template>
@@ -26,6 +81,7 @@
             name="codigoPedido"
             type="text"
             placeholder="Ex.: PED-001"
+            v-model="codigoPedido"
           />
         </div>
 
@@ -39,13 +95,14 @@
             name="nomeCliente"
             type="text"
             placeholder="Digite o nome do cliente"
+            v-model="nomeCliente"
           />
         </div>
       </div>
 
-      <!-- O aluno deverá implementar as mensagens de validação. -->
-
-      <!-- Exiba aqui uma mensagem quando os dados forem inválidos. -->
+      <p v-if="codigoPedido == ''">
+        Preencha o código do pedido
+      </p>
     </section>
 
     <section class="card" aria-labelledby="adicionar-produto">
@@ -62,6 +119,7 @@
             name="nomeProduto"
             type="text"
             placeholder="Ex.: Tomate"
+            v-model="nomeProduto"
           />
         </div>
 
@@ -77,6 +135,7 @@
             min="0"
             step="0.01"
             placeholder="0,00"
+            v-model="precoUnitario"
           />
         </div>
 
@@ -92,12 +151,13 @@
             min="1"
             step="1"
             placeholder="0"
+            v-model="quantidade"
           />
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="button button-primary" type="button">
+        <button class="button button-primary" type="button" @click="adicionarProduto()">
           Adicionar produto
         </button>
       </div>
@@ -106,16 +166,10 @@
     <section class="card" aria-labelledby="itens-pedido">
       <h2 id="itens-pedido">Itens do pedido</h2>
 
-      <!--
-        O aluno deverá utilizar uma diretiva condicional para
-        mostrar uma mensagem na tela quando não houver produtos.
-      -->
+      <p v-if="produtos == []">
+        Nenhum produto adicionado ao pedido.
+      </p>
 
-      <!-- Exiba aqui uma mensagem quando nenhum produto foi adicionado ao pedido.-->
-
-      <!--
-        O aluno deverá utilizar v-for para apresentar os produtos.
-      -->
       <div class="table-responsive">
         <table>
           <thead>
@@ -129,41 +183,33 @@
           </thead>
 
           <tbody>
-            <!--
-              Exemplo da estrutura que deverá ser repetida pelo aluno:
-
-              <tr>
-                <td>Nome do produto</td>
-                <td>Preço unitário</td>
-                <td>Quantidade</td>
-                <td>Total do item</td>
-                <td>
-                  <button type="button">Excluir</button>
-                </td>
-              </tr>
-            -->
+            <tr v-for="item in produtos.value">
+              <td>{{ item.nome }}</td>
+              <td>R$ {{ item.preco }}</td>
+              <td>{{ item.quantidade }}</td>
+              <td>R$ {{ item.preco * item.quantidade }}</td>
+              <td>
+                <button type="button" @click="excluirProduto(item)">Excluir</button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
 
       <div class="order-total">
         <span>Total da compra</span>
-
-        <!-- O aluno deverá apresentar aqui o total calculado. -->
-        <strong>R$ 0,00</strong>
+        <strong>R$ {{ calcularTotal() }}</strong>
       </div>
 
       <div class="form-actions">
-        <button class="button button-secondary" type="button">
+        <button class="button button-secondary" type="button" @click="limpar()">
           Limpar
         </button>
 
-        <button class="button button-primary" type="button">
+        <button class="button button-primary" type="button" @click="finalizarPedido()">
           Finalizar pedido
         </button>
       </div>
     </section>
   </main>
 </template>
-
-
